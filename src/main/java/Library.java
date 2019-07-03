@@ -7,9 +7,9 @@ public class Library {
 
     Connection connection;
 
-    public Library(){
+    public Library() {
         try {
-            this.connection= DriverManager.getConnection(
+            this.connection = DriverManager.getConnection(
                     "jdbc:mysql://localhost/library?useUnicode=true&useJDBCCompliantTimezoneShift=" +
                             "true&useLegacyDatetimeCode=false&serverTimezone=UTC", "root", "1234");
         } catch (SQLException e) {
@@ -18,14 +18,14 @@ public class Library {
 
     }
 
-    public void createTable(){
+    public void createTable() {
         try {
             Statement statement = connection.createStatement();
-            String dropIfExists= "drop table if exists books2";
+            String dropIfExists = "drop table if exists books2";
 
             statement.executeUpdate(dropIfExists);
 
-            String createTable=
+            String createTable =
                     "create table if not exists books2 (\n" +
                             "id int not null auto_increment,\n" +
                             "title varchar(255),\n" +
@@ -42,8 +42,8 @@ public class Library {
     }
 
 
-    public void addBook(String title, String author, float price, int quantity){
-        String insertBook= "INSERT INTO books2(title, author, price, quantity) values (?, ?, ?, ?)";
+    public void addBook(String title, String author, float price, int quantity) {
+        String insertBook = "INSERT INTO books2(title, author, price, quantity) values (?, ?, ?, ?)";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(insertBook);
             preparedStatement.setString(1, title);
@@ -57,20 +57,20 @@ public class Library {
         }
     }
 
-    public void deleteBooks(){
+    public void deleteBooks() {
         try {
             Statement statement = connection.createStatement();
-            String deleteBokks ="delete from books2";
-            statement.executeUpdate(deleteBokks);
+            String deleteBooks = "delete from books2";
+            statement.executeUpdate(deleteBooks);
             showBooks();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void deleteBook(String title, int quantity){
+    public void changeBooksNumber(String title, int quantity) {
         try {
-            String deleteBook = "update books2 set quantity= (quantity - ?) where title = ? ";
+            String deleteBook = "update books2 set quantity= (quantity + ?) where title = ? ";
             PreparedStatement preparedStatement = connection.prepareStatement(deleteBook);
             preparedStatement.setInt(1, quantity);
             preparedStatement.setString(2, title);
@@ -81,7 +81,7 @@ public class Library {
         }
     }
 
-    public void setDiscount(String title, int discount){
+    public void setDiscount(String title, int discount) {
 
         try {
             String setDiscount = "update books2 set price=(price*(1-?/100)) where title =? ";
@@ -92,10 +92,10 @@ public class Library {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-      ;
+        ;
     }
 
-    public void setPrice(String title, BigDecimal newPrice){
+    public void setPrice(String title, BigDecimal newPrice) {
         try {
             String deleteBook = "update books2 set price= ? where title =? ";
             PreparedStatement preparedStatement = connection.prepareStatement(deleteBook);
@@ -107,18 +107,50 @@ public class Library {
         }
     }
 
-    public void showBooks(){
+    public void findByTitle(String phrase) {
+        try {
+            Statement statement = connection.createStatement();
+            String findBook = " select * from books2 where title like '%" + phrase + "%'";
+            ResultSet resultSet = statement.executeQuery(findBook);
+            iterateAndShow(resultSet);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void findByAuthor(String phrase) {
+        try {
+            Statement statement = connection.createStatement();
+            String findBook = " select * from books2 where author like '%" + phrase + "%'";
+            ResultSet resultSet = statement.executeQuery(findBook);
+            iterateAndShow(resultSet);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void showBooks() {
         String showRecords = "select * from books2";
         try {
-            Statement  statement = connection.createStatement();
+            Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(showRecords);
+            iterateAndShow(resultSet);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void iterateAndShow(ResultSet resultSet) {
+        try {
             while (resultSet.next()) {
                 String title = resultSet.getString("title");
                 String author = resultSet.getString("author");
                 BigDecimal price = resultSet.getBigDecimal("price");
-
                 int quantity = resultSet.getInt("quantity");
-                System.out.println(title + " by " + author + " - " + price + " PLN. " +quantity + " szt.");
+                System.out.println(title + " by " + author + " - " + price + " PLN. " + quantity + " szt.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
